@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.AnalogInput;
-
+import edu.wpi.first.math.controller.PIDController;
 public class Arm{
     private CANSparkMax armMotor;
     private DigitalInput armSwitch1;
@@ -17,15 +17,16 @@ public class Arm{
     private boolean runArm = true;
     private double finalTarget;
     private AnalogPotentiometer armPot;
-
+    private PIDController armPID;
+    private double target;
     public Arm(){
         //armMotor = new CANSparkMax(ElevatorArmConstants.ArmID, MotorType.kBrushless);
         //armSwitch1 = new DigitalInput(ElevatorArmConstants.armSwitch1Port);
         //armSwitch2 = new DigitalInput(ElevatorArmConstants.armSwitch2Port);
         armMotor1 = new CANSparkMax(11, MotorType.kBrushless);
         armPot = new AnalogPotentiometer(0);
+        armPID = new PIDController(0, 0, 0);
         armMotor1.setIdleMode(IdleMode.kBrake);
-        
     }
     public static enum RunArm { 
         UP,DOWN
@@ -33,6 +34,18 @@ public class Arm{
     // public static RunArm ArmState;
     @Override
     public void run(RunArm ArmState){
+        switch(ArmState){
+            case UP:
+                target = 0.6285;
+                armPID.calculate(target)
+            
+            break;
+            case DOWN:
+                target = 0.98;
+            
+
+            break;
+        }
         
     }
 
@@ -45,14 +58,8 @@ public class Arm{
 
     }
     
-    public void setArmRunning(boolean state){
-        runArm = state;
-    }
 
-    public void setArmTarget(TARGET target){
-        m_armTarget = target;
-
-    }
     public double GetPotValue(){
         return armPot.get();
     }
+}
