@@ -35,16 +35,18 @@ public class Arm{
     }
     // public static RunArm ArmState;
     @Override
-    public void run(RunArm ArmState){
-        current = GetPotValue();
+    public void pe(RunArm ArmState){
+        
         switch(ArmState){
             case UP:
+                current = GetPotValue();
                 target = 0.6285;
                 output = armPID.calculate(target-current);
                 SetArmSpeed(output);
             
             break;
             case DOWN:
+                current = GetPotValue();
                 target = 0.98;
                 output = armPID.calculate(target-current);
                 SetArmSpeed(output);
