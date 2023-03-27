@@ -11,18 +11,32 @@ import edu.wpi.first.wpilibj.Solenoid;
 
 //Right Bumber cone,Left Bumber cube
 public class Intake{
-    public static final int Intake1ID = 9;
-    public static final int Intake2ID = 10;
+
     private Solenoid Intakeout;
     private CANSparkMax RollerBottom;
     private CANSparkMax RollerTop;
     private Encoder IntakeEncoder;
+
+    public enum moveIntake{
+        UP, DOWN, OFF;
+    }
+    public moveIntake intakeState = moveIntake.UP;
+
     public Intake(){
         Intakeout = new Solenoid(PneumaticsModuleType.REVPH, 1);
-        RollerBottom = new CANSparkMax(Intake1ID, MotorType.kBrushless);
-        RollerTop = new CANSparkMax(Intake2ID, MotorType.kBrushless);
+        RollerBottom = new CANSparkMax(9, MotorType.kBrushless);
+        RollerTop = new CANSparkMax(10, MotorType.kBrushless);
         //IntakeEncoder = new Encoder(0, 0);
         //IntakeEncoder.reset();
     }
 
+    
+    public void run(moveIntake intakeState){
+        this.intakeState = intakeState;
+        switch(intakeState){
+            case UP:
+                
+            case DOWN:
+        }
+    }
 }

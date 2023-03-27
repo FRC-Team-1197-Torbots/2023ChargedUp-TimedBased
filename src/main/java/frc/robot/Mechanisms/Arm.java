@@ -19,6 +19,8 @@ public class Arm{
     private AnalogPotentiometer armPot;
     private PIDController armPID;
     private double target;
+    private double current;
+    private double output;
     public Arm(){
         //armMotor = new CANSparkMax(ElevatorArmConstants.ArmID, MotorType.kBrushless);
         //armSwitch1 = new DigitalInput(ElevatorArmConstants.armSwitch1Port);
@@ -34,16 +36,18 @@ public class Arm{
     // public static RunArm ArmState;
     @Override
     public void run(RunArm ArmState){
+        current = GetPotValue();
         switch(ArmState){
             case UP:
                 target = 0.6285;
-                armPID.calculate(target)
+                output = armPID.calculate(target-current);
+                SetArmSpeed(output);
             
             break;
             case DOWN:
                 target = 0.98;
-            
-
+                output = armPID.calculate(target-current);
+                SetArmSpeed(output);
             break;
         }
         
