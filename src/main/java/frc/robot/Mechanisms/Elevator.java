@@ -14,7 +14,7 @@ public class Elevator {
     private Encoder elEncoder;
     //private STATE m_Elstate;
     //private TARGET m_Eltarget;
-
+    
     public Elevator(){
         elMotor1 = new CANSparkMax(7, MotorType.kBrushless);
         elMotor2 = new CANSparkMax(6, MotorType.kBrushless);
