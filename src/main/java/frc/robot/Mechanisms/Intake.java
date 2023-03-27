@@ -35,8 +35,10 @@ public class Intake{
         this.intakeState = intakeState;
         switch(intakeState){
             case UP:
-                
+                RollerTop.set(-0.5);
             case DOWN:
+                RollerBottom.set(0.6);
+            
         }
     }
 }
