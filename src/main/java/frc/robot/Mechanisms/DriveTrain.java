@@ -29,6 +29,9 @@ public class DriveTrain {
 
     public DriveTrain(XboxController player1, XboxController player2) {
         //navx_sim = new SimDevice(dev);
+        m_player1 = player1;
+        m_player2 = player2;
+
         LeftTop = new CANSparkMax(3, MotorType.kBrushless);
         LeftBottom1 = new CANSparkMax(4, MotorType.kBrushless);
         LeftBottom2 = new CANSparkMax(5, MotorType.kBrushless); 
@@ -36,8 +39,16 @@ public class DriveTrain {
         RightTop = new CANSparkMax(13, MotorType.kBrushless); 
         RightBottom1 = new CANSparkMax(12, MotorType.kBrushless);		
         RightBottom2 = new CANSparkMax(2, MotorType.kBrushless);
-        //m_Drive = new DifferentialDrive(LeftBottom1, RightTop);
         
+        
+        LeftTop.setIdleMode(IdleMode.kBrake);
+        LeftBottom1.setIdleMode(IdleMode.kBrake);
+        LeftBottom2.setIdleMode(IdleMode.kBrake);
+
+        RightTop.setIdleMode(IdleMode.kBrake);
+        RightBottom1.setIdleMode(IdleMode.kBrake);
+        RightBottom2.setIdleMode(IdleMode.kBrake);
+
         pigeon = new Pigeon2(1);
     
         //pidDrive = new PIDController(TeleopDriveConstants.velocitykP, TeleopDriveConstants.velocitykI, TeleopDriveConstants.velocitykD);
@@ -53,14 +64,19 @@ public class DriveTrain {
 
         pigeon.configFactoryDefault();
         pigeon.setYaw(0);
+
+        setMotorState(IdleMode.kBrake);
         //gyroSim = new AnalogGyroSim(m_gyro);
         
       }
     
-      public void Drive(double throttle, double steer){
-        if(m_player1.getRawButtonReleased(1)) {
+      public void Drive(){
+        double throttle = m_player1.getLeftY();
+        double steer = m_player1.getLeftX();
+
+        /*if(m_player1.getRawButtonReleased(1)) {
             low = !low;
-          }
+        }*/
       
           //SmartDashboard.putBoolean("low", low);
       
@@ -97,18 +113,18 @@ public class DriveTrain {
               leftSpeed = Math.max(throttle, -steer);
               rightspeed = throttle + steer;
           }
-      } else {
-          if(steer > 0) {
-              leftSpeed = -Math.max(-throttle, steer);
-              rightspeed = throttle + steer;
-          } else {
-              leftSpeed = throttle - steer;
-              rightspeed = -Math.max(-throttle, -steer);
-          }
-      }
+        } else {
+            if(steer > 0) {
+                leftSpeed = -Math.max(-throttle, steer);
+                rightspeed = throttle + steer;
+            } else {
+                leftSpeed = throttle - steer;
+                rightspeed = -Math.max(-throttle, -steer);
+            }
+        }
       
     
-        setMotorSpeeds(throttle, steer);
+        setMotorSpeeds(leftSpeed, rightspeed);
         
       }
     
@@ -165,11 +181,8 @@ public class DriveTrain {
     
         // Setting the right master Talon's speed to the given parameter
         public void SetRight(double speed) {
-            RightTop.set(-speed); //in correct setting, but "software fix"		
-        //System.out.println("Right output current: " + RightTop.getOutputCurrent());
+            RightTop.set(-speed); 
             RightBottom1.set(-speed);
             RightBottom2.set(-speed);
-        }
-    
-    
+        }    
 }

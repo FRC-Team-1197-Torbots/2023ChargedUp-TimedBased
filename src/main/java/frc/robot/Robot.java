@@ -4,11 +4,19 @@
 
 package frc.robot;
 
+import com.revrobotics.CANSparkMax.IdleMode;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Mechanisms.Arm;
+import frc.robot.Mechanisms.Claw;
 import frc.robot.Mechanisms.DriveTrain;
+import frc.robot.Mechanisms.Elevator;
+import frc.robot.Mechanisms.Intake;
+import frc.robot.Mechanisms.LED;
+import frc.robot.Mechanisms.MechMaster;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -24,6 +32,13 @@ public class Robot extends TimedRobot {
   private XboxController player1;
   private XboxController player2;
   private DriveTrain driveTrain;
+  private MechMaster mechMaster;
+  private Elevator elevator;
+  private Arm arm;
+  private Claw claw;
+  private Intake intake;
+  private LED led;
+  
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -34,7 +49,18 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+    player1 = new XboxController(0);
+    player2 = new XboxController(1);
     driveTrain = new DriveTrain(player1, player2);
+    elevator = new Elevator();
+    intake = new Intake();
+    arm = new Arm();
+    claw = new Claw();
+    led = new LED();
+    mechMaster = new MechMaster(player1, player2, elevator, arm, claw, intake, led);
+    elevator.ResetEncoder();
+    
+  
   }
 
   /**
@@ -85,12 +111,15 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    driveTrain.Drive(player1.getLeftY(), player1.getLeftX());
+    mechMaster.mechRun();
+    driveTrain.Drive();
   }
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    driveTrain.setMotorState(IdleMode.kCoast);
+  }
 
   /** This function is called periodically when disabled. */
   @Override

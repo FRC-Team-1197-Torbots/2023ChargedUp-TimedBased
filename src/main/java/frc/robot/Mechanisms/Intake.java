@@ -18,7 +18,7 @@ public class Intake{
     private Encoder IntakeEncoder;
 
     public enum moveIntake{
-        UP, DOWN, OFF;
+        UP, DOWN
     }
     public moveIntake intakeState = moveIntake.UP;
 
@@ -28,6 +28,11 @@ public class Intake{
         RollerTop = new CANSparkMax(10, MotorType.kBrushless);
         //IntakeEncoder = new Encoder(0, 0);
         //IntakeEncoder.reset();
+        
+    }
+
+    public void TriggerIntake() {
+        Intakeout.toggle();
     }
 
     
@@ -35,10 +40,15 @@ public class Intake{
         this.intakeState = intakeState;
         switch(intakeState){
             case UP:
-                RollerTop.set(-0.5);
+                Intakeout.set(false);
+                RollerTop.set(0);
+                RollerBottom.set(0);
+                break;
             case DOWN:
+                Intakeout.set(true);
+                RollerTop.set(-0.5);
                 RollerBottom.set(0.6);
-            
+                break;
         }
     }
 }
