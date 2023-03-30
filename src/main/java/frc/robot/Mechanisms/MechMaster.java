@@ -37,13 +37,14 @@ public class MechMaster {
     public void mechRun(){
 
         /** Need to integrate into elevator code, but arm code is working */
+        
         if(m_player2.getAButton()){
             
             m_arm.SetState(RunArm.STORE);
            
         }
         if(m_player2.getBButton()){
-            m_arm.SetState(RunArm.DOWN);
+            m_arm.SetState(RunArm.HORIZONTAL);
             
         }
         if(m_player2.getYButton()){
@@ -51,6 +52,7 @@ public class MechMaster {
             m_arm.SetState(RunArm.HORIZONTAL);
             
         }
+    
 
         m_arm.run();
 
@@ -59,12 +61,15 @@ public class MechMaster {
         }
 
         if(m_player1.getRightBumper()){
-            m_claw.SetClawSpeed(ConeIntakeSpeed);
-        } else if(m_player1.getLeftBumper()){
-            m_claw.SetClawSpeed(CubeIntakeSpeed);
-        } else if(m_player1.getLeftTriggerAxis()>0.2){
+            if(m_claw.getSolenoidValue()){
+                m_claw.SetClawSpeed(ConeIntakeSpeed);
+            }else{
+                m_claw.SetClawSpeed(CubeIntakeSpeed);
+            }
+        }
+        if(m_player1.getRightTriggerAxis()>0.2){
             m_claw.SetClawSpeed(CubeEjectSpeed);
-        } else if(m_player1.getLeftTriggerAxis()< 0.2) {
+        } else if(m_player1.getRightTriggerAxis()< 0.2) {
             m_claw.SetClawSpeed(0);
         }
 
@@ -73,7 +78,7 @@ public class MechMaster {
         }
 
 
-        /*if(m_player2.getAButton()){
+        if(m_player2.getAButton()){
             
             m_elevator.SetState(RunElevator.STORE);
            
@@ -86,7 +91,7 @@ public class MechMaster {
            
             m_elevator.SetState(RunElevator.SCORE);
             
-        }*/
+        }
 
         m_elevator.run();
          

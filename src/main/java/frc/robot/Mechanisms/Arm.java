@@ -16,13 +16,20 @@ public class Arm{
     private double target;
     private RunArm m_state;
     private boolean ontarget;
+    private double currentPosition;
+    private double speed;
+    private boolean isFinished;
 
     private final double STOREDBL = 0.805f;
     private final double SCOREDBL = 0.441f;
     private final double DOWNDBL = 0.655f;
+    private AutoArmDirection m_ArmDirection;
 
     public static enum RunArm { 
-        STORE, DOWN, HORIZONTAL
+        STORE, DOWN, HORIZONTAL, IDLE
+    }
+    public static enum AutoArmDirection{
+        UP, DOWN
     }
 
 
@@ -34,7 +41,7 @@ public class Arm{
         armPot = new AnalogPotentiometer(0);
         //armPID = new PIDController(1, 0, 0);
         armMotor1.setIdleMode(IdleMode.kBrake);
-        SetState(RunArm.STORE);     
+        SetState(RunArm.IDLE);     
     }
 
 
@@ -53,6 +60,10 @@ public class Arm{
             case HORIZONTAL:
                 target = SCOREDBL;
             break;
+
+            case IDLE:
+                target = GetPotValue();
+            break;
         }
 
 
@@ -64,8 +75,8 @@ public class Arm{
     //horizontal = 0.441
     //straight down = 0.695
     public void run(){
-        double currentPosition = GetPotValue();
-        double speed = 0;
+        currentPosition = GetPotValue();
+        speed = 0;
 
         if(!ontarget) {                   
 
@@ -103,16 +114,52 @@ public class Arm{
         }
 
         if(ontarget && m_state == RunArm.HORIZONTAL) {
-            speed = -0.01f;
+            speed = -0.005f;
         }
 
-        SetArmSpeed(speed * 1.5f);
+        SetArmSpeed(speed * 3.7f);
 
         SmartDashboard.putNumber("CurrentPosition Arm", currentPosition);
         SmartDashboard.putBoolean("OnTarget Arm", ontarget);
         SmartDashboard.putNumber("Arm Error", (target - currentPosition));
         SmartDashboard.putNumber("Arm target", target);
 
+    }
+
+    public void autoRun(AutoArmDirection armDirection){
+        currentPosition = GetPotValue();
+        speed = 0;
+        switch(m_ArmDirection){
+            case UP:
+                target = SCOREDBL;
+                if(currentPosition < target) {
+                    speed = 0.2;
+                } else {
+                    speed = -0.2;
+                }
+                break;
+            case DOWN:
+                target = STOREDBL;
+                if(currentPosition < target) {
+                    speed = 0.2;
+                } else {
+                    speed = -0.2;
+                }
+                break;
+        }
+        if(Math.abs(target - currentPosition) < 0.005f) {
+            ontarget = true;
+            isFinished = true;
+            speed = 0;
+        }
+        else{
+            isFinished = false;
+        }
+
+    }
+    
+    public boolean isDone(){
+        return isFinished;
     }
 
     /*

@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.PID_Tools.TorDerivative;
 import edu.wpi.first.math.controller.PIDController;
 public class DriveTrain {
     private CANSparkMax LeftTop;
@@ -22,12 +23,37 @@ public class DriveTrain {
     private Encoder rightEncoder;
     private XboxController m_player1;
     private XboxController m_player2;
+    private double lefttargetSpeed, righttargetSpeed;
+    private double currentSpeed;
+    private double currentError;
+    
+    private double velocitykP = 0.000066;
+    private double velocitykI = 0;
+    private double velocitykD = 0;
+    private TorDerivative pidDerivative;
+    private double pidDerivativeResult;
+    private double LeftPIDSum;
+    private double RightPIDSum;
+    private double pidIntegral;
+    private double timeInterval = 0.005;
+    private double dt = timeInterval;
+
+    public static enum SIDE {
+      LEFT, RIGHT
+    }
+
+    private double leftOutput;
+    private double rightOutput;
+
+    private final double MAX_VELOCITY = 15000f;
+
+    private Elevator m_Elevator;
 
     private double maxThrottle, maxSteer;
 
     private boolean low;
 
-    public DriveTrain(XboxController player1, XboxController player2) {
+    public DriveTrain(XboxController player1, XboxController player2, Elevator elevator) {
         //navx_sim = new SimDevice(dev);
         m_player1 = player1;
         m_player2 = player2;
@@ -39,7 +65,7 @@ public class DriveTrain {
         RightTop = new CANSparkMax(13, MotorType.kBrushless); 
         RightBottom1 = new CANSparkMax(12, MotorType.kBrushless);		
         RightBottom2 = new CANSparkMax(2, MotorType.kBrushless);
-        
+        pidDerivative = new TorDerivative(dt);
         
         LeftTop.setIdleMode(IdleMode.kBrake);
         LeftBottom1.setIdleMode(IdleMode.kBrake);
@@ -50,6 +76,8 @@ public class DriveTrain {
         RightBottom2.setIdleMode(IdleMode.kBrake);
 
         pigeon = new Pigeon2(1);
+
+        m_Elevator = elevator;
     
         //pidDrive = new PIDController(TeleopDriveConstants.velocitykP, TeleopDriveConstants.velocitykI, TeleopDriveConstants.velocitykD);
         //m_gyro = new AnalogGyro(0);
@@ -70,7 +98,7 @@ public class DriveTrain {
         
       }
     
-      public void Drive(){
+      public void TeleDrive(){
         double throttle = m_player1.getLeftY();
         double steer = m_player1.getLeftX();
 
@@ -80,10 +108,15 @@ public class DriveTrain {
       
           //SmartDashboard.putBoolean("low", low);
       
-        if(!low){
+        
+        if(m_Elevator.GetElevatorPos() > 5000){
+          maxThrottle = 0.4;
+        }
+        else if(!low){
           maxThrottle = 0.9;
           maxSteer = 0.9;
-        } else if(low){
+        } 
+        else{
           maxThrottle = 0.5;
           maxSteer = 0.5;
         }
@@ -122,11 +155,63 @@ public class DriveTrain {
                 rightspeed = -Math.max(-throttle, -steer);
             }
         }
+
+
+        //leftOutput = PID(getLeftVelocity(), leftSpeed * MAX_VELOCITY, SIDE.LEFT);
+        //rightOutput = PID(getRightVelocity(), rightspeed * MAX_VELOCITY, SIDE.RIGHT);
+        /* 
+        if (Math.abs(leftOutput) < 0.01 && Math.abs(rightOutput) < 0.01) 
+            setMotorSpeeds(0, 0);
+       else 
+            setMotorSpeeds(leftOutput, rightOutput);
+          */
+          setMotorSpeeds(leftSpeed, rightspeed);
+
+        //lefttargetSpeed = leftSpeed * MAX_VELOCITY;
+        //righttargetSpeed = rightspeed * MAX_VELOCITY;
+
       
     
-        setMotorSpeeds(leftSpeed, rightspeed);
+        //setMotorSpeeds(leftOutput, rightOutput);
         
       }
+
+      public double PID(double currentSpeed, double targetSpeed, SIDE side) {
+        
+        currentError = targetSpeed - currentSpeed;
+
+        // SmartDashboard.putNumber("currentError:", currentError);
+        pidDerivativeResult = pidDerivative.estimate(currentError);
+        pidIntegral += currentError;
+
+        if(currentError < 20) {
+        pidIntegral = 0;
+        }
+
+        if(pidIntegral * velocitykI > 0.5) {
+        pidIntegral = 0.5 / velocitykI;
+        } else if(pidIntegral * velocitykI < -0.5) {
+        pidIntegral = -0.5 / velocitykI;
+        }
+
+        if(side == SIDE.LEFT) {
+            LeftPIDSum = ((currentError * velocitykP) +
+            (pidIntegral * velocitykI) +
+            (pidDerivativeResult * velocitykD)); //+ FeedForward;
+    
+            return LeftPIDSum;
+        } else if(side == SIDE.RIGHT) {
+            RightPIDSum = ((currentError * velocitykP) +
+            (pidIntegral * velocitykI) +
+            (pidDerivativeResult * velocitykD)); //+ FeedForward;
+    
+            return RightPIDSum;
+        } else {
+            return 0;            
+        }
+
+
+   }
     
       public void setMotorState(IdleMode mode){
         LeftTop.setIdleMode(mode);
@@ -141,6 +226,8 @@ public class DriveTrain {
         SetLeft(leftOutput);
         SetRight(rightOutput);
       }
+
+      public void setHalfSpeed(){}
       
       public double getRightVelocity() {
         return rightEncoder.getRate();

@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Autos.ScoreDriveBack;
 import frc.robot.Mechanisms.Arm;
 import frc.robot.Mechanisms.Claw;
 import frc.robot.Mechanisms.DriveTrain;
@@ -26,7 +27,7 @@ import frc.robot.Mechanisms.MechMaster;
  */
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
+  private static final String kCustomAuto = "Score then Drive Back";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private XboxController player1;
@@ -38,6 +39,8 @@ public class Robot extends TimedRobot {
   private Claw claw;
   private Intake intake;
   private LED led;
+
+  private ScoreDriveBack m_ScoreDriveBack;
   
 
   /**
@@ -46,18 +49,19 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
+    //m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    m_chooser.setDefaultOption("Score and Drive Back", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
     player1 = new XboxController(0);
     player2 = new XboxController(1);
-    driveTrain = new DriveTrain(player1, player2);
-    elevator = new Elevator();
     intake = new Intake();
     arm = new Arm();
     claw = new Claw();
     led = new LED();
+    elevator = new Elevator(arm);
     mechMaster = new MechMaster(player1, player2, elevator, arm, claw, intake, led);
+    driveTrain = new DriveTrain(player1, player2, elevator);
+    m_ScoreDriveBack = new ScoreDriveBack(driveTrain, intake, elevator, arm, claw);
     elevator.ResetEncoder();
     
   
@@ -86,16 +90,18 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
+    elevator.ResetEncoder();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
+    //System.out.println("Auto selected: " + m_autoSelected);
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
     switch (m_autoSelected) {
+
       case kCustomAuto:
-        // Put custom auto code here
+        m_ScoreDriveBack.run();
         break;
       case kDefaultAuto:
       default:
@@ -112,7 +118,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     mechMaster.mechRun();
-    driveTrain.Drive();
+    driveTrain.TeleDrive();
   }
 
   /** This function is called once when the robot is disabled. */
