@@ -59,7 +59,7 @@ public class MechMaster {
         if(m_player1.getAButton()){
             m_intake.TriggerIntake();
         }
-
+        
         if(m_player1.getRightBumper()){
             if(m_claw.getSolenoidValue()){
                 m_claw.SetClawSpeed(ConeIntakeSpeed);

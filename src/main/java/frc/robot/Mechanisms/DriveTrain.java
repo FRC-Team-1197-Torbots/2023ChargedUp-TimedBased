@@ -114,11 +114,11 @@ public class DriveTrain {
         }
         else if(!low){
           maxThrottle = 0.9;
-          maxSteer = 0.9;
+          maxSteer = 0.7;
         } 
         else{
           maxThrottle = 0.5;
-          maxSteer = 0.5;
+          maxSteer = 0.35;
         }
         
         double sign = Math.signum(throttle);

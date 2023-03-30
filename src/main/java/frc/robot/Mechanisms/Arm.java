@@ -83,26 +83,26 @@ public class Arm{
             switch(m_state){
                 case STORE:
                     if(currentPosition < STOREDBL) {
-                        speed = 0.2;
+                        speed = 0.23;
                     } else {
-                        speed = -0.2;
+                        speed = -0.23;
                     }
                 
                 break;
 
                 case DOWN:
                     if(currentPosition < DOWNDBL) {
-                        speed = 0.2;
+                        speed = 0.23;
                     } else {
-                        speed = -0.2;
+                        speed = -0.23;
                     }
                 break;
 
                 case HORIZONTAL:
                     if(currentPosition < SCOREDBL) {
-                        speed = 0.2;
+                        speed = 0.23;
                     } else {
-                        speed = -0.2;
+                        speed = -0.23;
                     }
                 break;
             }
