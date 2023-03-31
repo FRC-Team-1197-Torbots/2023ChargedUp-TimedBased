@@ -26,7 +26,8 @@ public class LinearTrajectoryTimed {
     public void run(){
         currentTime = Timer.getFPGATimestamp();
         timeDifference = currentTime - startTime;
-        m_DriveTrain.setMotorSpeeds(driveSpeed, driveSpeed);
+        m_DriveTrain.setMotorSpeeds(-driveSpeed, -driveSpeed);
+        
         if(timeDifference > endTime){
             isFinished = true;
         }

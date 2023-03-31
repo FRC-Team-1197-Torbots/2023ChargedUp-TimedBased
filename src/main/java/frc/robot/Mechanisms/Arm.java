@@ -14,15 +14,16 @@ public class Arm{
     private CANSparkMax armMotor1;
     private AnalogPotentiometer armPot;
     private double target;
-    private RunArm m_state;
-    private boolean ontarget;
+    public RunArm m_state;
+    public boolean ontarget;
     private double currentPosition;
     private double speed;
     private boolean isFinished;
 
-    private final double STOREDBL = 0.805f;
-    private final double SCOREDBL = 0.441f;
-    private final double DOWNDBL = 0.655f;
+    public final double STOREDBL = 0.805f;
+    public final double SCOREDBL = 0.441f;
+    public final double DOWNDBL = 0.655f;
+    private final double MAX_ARM_OUTPUT = 0.35;
     private AutoArmDirection m_ArmDirection;
 
     public static enum RunArm { 
@@ -42,6 +43,10 @@ public class Arm{
         //armPID = new PIDController(1, 0, 0);
         armMotor1.setIdleMode(IdleMode.kBrake);
         SetState(RunArm.IDLE);     
+    }
+
+    public double getMaxOutput(){
+        return MAX_ARM_OUTPUT;
     }
 
 
@@ -82,10 +87,11 @@ public class Arm{
 
             switch(m_state){
                 case STORE:
+
                     if(currentPosition < STOREDBL) {
-                        speed = 0.23;
+                        speed = 0.31;
                     } else {
-                        speed = -0.23;
+                        speed = -0.31;
                     }
                 
                 break;
@@ -149,7 +155,7 @@ public class Arm{
         }
         if(Math.abs(target - currentPosition) < 0.005f) {
             ontarget = true;
-            isFinished = true;
+            //isFinished = true;
             speed = 0;
         }
         else{
@@ -159,7 +165,7 @@ public class Arm{
     }
     
     public boolean isDone(){
-        return isFinished;
+        return ontarget;
     }
 
     /*
@@ -174,5 +180,8 @@ public class Arm{
 
     public double GetPotValue(){
         return armPot.get();
+    }
+    public double getArmVoltage(){
+        return armMotor1.get();
     }
 }

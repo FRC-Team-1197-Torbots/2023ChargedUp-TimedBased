@@ -6,11 +6,16 @@ package frc.robot;
 
 import com.revrobotics.CANSparkMax.IdleMode;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Autos.ScoreDriveBack;
+import frc.robot.Autos.AutoBalance;
+import frc.robot.Autos.LinearTrajectory;
+import frc.robot.Autos.LinearTrajectoryTimed;
+import frc.robot.Autos.ScoreConeDriveBack;
 import frc.robot.Mechanisms.Arm;
 import frc.robot.Mechanisms.Claw;
 import frc.robot.Mechanisms.DriveTrain;
@@ -26,8 +31,9 @@ import frc.robot.Mechanisms.MechMaster;
  * project.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "Score then Drive Back";
+  private static final String kDefaultAuto = "Do Nothing";
+  private static final String kAuto1 = "Score then Drive Back";
+  private static final String kAuto2 = "Auto Balance";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private XboxController player1;
@@ -39,8 +45,10 @@ public class Robot extends TimedRobot {
   private Claw claw;
   private Intake intake;
   private LED led;
+  private NetworkTable table;
 
-  private ScoreDriveBack m_ScoreDriveBack;
+  private ScoreConeDriveBack m_ScoreDriveBack;
+  private AutoBalance m_AutoBalance;
   
 
   /**
@@ -49,9 +57,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    //m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.setDefaultOption("Score and Drive Back", kCustomAuto);
+    m_chooser.setDefaultOption("Do Nothing", kDefaultAuto);
+    m_chooser.addOption("Score and Drive Back", kAuto1);
+    m_chooser.addOption("Auto Balance", kAuto2);
     SmartDashboard.putData("Auto choices", m_chooser);
+    table = NetworkTableInstance.getDefault().getTable("limelight");
     player1 = new XboxController(0);
     player2 = new XboxController(1);
     intake = new Intake();
@@ -61,7 +71,8 @@ public class Robot extends TimedRobot {
     elevator = new Elevator(arm);
     mechMaster = new MechMaster(player1, player2, elevator, arm, claw, intake, led);
     driveTrain = new DriveTrain(player1, player2, elevator);
-    m_ScoreDriveBack = new ScoreDriveBack(driveTrain, intake, elevator, arm, claw);
+    m_ScoreDriveBack = new ScoreConeDriveBack(driveTrain, intake, elevator, arm, claw);
+    m_AutoBalance = new AutoBalance(driveTrain, intake, elevator, arm, claw);
     elevator.ResetEncoder();
     
   
@@ -91,6 +102,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
     elevator.ResetEncoder();
+    //claw.TriggerSolenoid();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     //System.out.println("Auto selected: " + m_autoSelected);
   }
@@ -99,14 +111,20 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     switch (m_autoSelected) {
-
-      case kCustomAuto:
-        m_ScoreDriveBack.run();
-        break;
       case kDefaultAuto:
-      default:
-        // Put default auto code here
+        driveTrain.setMotorSpeeds(0, 0);
         break;
+      case kAuto1:
+        m_ScoreDriveBack.run();
+        arm.run();
+        elevator.run();
+
+        break;
+      case kAuto2:
+        m_AutoBalance.run();
+        arm.run();
+        elevator.run();
+        
     }
   }
 

@@ -111,6 +111,7 @@ public class DriveTrain {
         
         if(m_Elevator.GetElevatorPos() > 5000){
           maxThrottle = 0.4;
+          maxSteer = 0.3;
         }
         else if(!low){
           maxThrottle = 0.9;

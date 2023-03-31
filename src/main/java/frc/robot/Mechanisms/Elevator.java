@@ -8,7 +8,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Mechanisms.Arm.RunArm;
 import frc.robot.PID_Tools.TorDerivative;
 
 
@@ -27,7 +26,7 @@ public class Elevator {
     private boolean isFinished;
     //private STATE m_Elstate;
     //private TARGET m_Eltarget;
-    private RunElevator m_runElevator;
+    public RunElevator m_runElevator;
     private AutoElevatorDirection m_ElevatorDirection;
     private double timeInterval = 0.005;
     private double dt = timeInterval;
@@ -175,25 +174,26 @@ public class Elevator {
             break;
 
             case INTAKE:
-                target = 23108;
+                target = 24608;
                 elevatorOutput = (kPTOP * (target - currentPosition)) + (kITOP * pidIntegral) + (kDTOP * pidDerivativeResult);
                 break;
 
             case SCORE:
-                target = 35096;
+                target = 32696;
                 elevatorOutput = (kPTOP * (target - currentPosition)) + (kITOP * pidIntegral) + (kDTOP * pidDerivativeResult);
                 break;
 
             case STORE:
                 target = 5000;
                 elevatorOutput = ((kPTOP * 0.5) * (target - currentPosition)) + (kITOP * pidIntegral) + (kDTOP * pidDerivativeResult);
-                
+              
         }
-        
-        
 
-
-        
+        if(Math.abs(target - currentPosition) < 600){
+            OnTarget = true;
+            //elevatorOutput = 0;
+        }     
+                
     }
 
     public void autoRun(AutoElevatorDirection elDirection){
@@ -228,7 +228,7 @@ public class Elevator {
     }
 
     public boolean isDone(){
-        return isFinished;
+        return OnTarget;
     }
 
     public void SetElevatorSpeed(double speed){

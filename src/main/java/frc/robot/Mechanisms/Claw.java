@@ -11,6 +11,7 @@ public class Claw{
     private Solenoid clawSolenoid;
     private CANSparkMax clawMotor;
     private boolean clawState;
+    private boolean clawTarget;
     private boolean isFinished;
     private double speed;
     private double ConeIntakeSpeed = 0.3;
@@ -20,7 +21,7 @@ public class Claw{
     private autoClawState m_aClawState;
 
     public static enum autoClawState{
-        INIT, RUN
+        OPEN, CLOSE
     }  
 
     public Claw(){
@@ -54,33 +55,28 @@ public class Claw{
     }
 
     public void autoRun(){
-        setAutoClawState(autoClawState.INIT);
+        setAutoClawState(autoClawState.OPEN);
         System.out.println("running claw");
-        switch(m_aClawState){
-            case INIT:
-                isFinished = false;
-                System.out.println("Initializing Claw");
-                dropClaw();
-                System.out.println("Claw State: " + clawState);
-                if(clawState == false){
-                    System.out.println("Done claw");
-                    isFinished = true;
-                }
-                break;
-            case RUN:
-                System.out.println("Dropping Claw");
-                dropClaw();
-                if(getSolenoidValue() != clawState){
-                    isFinished = true;
-                }
-                break;
-
-        }
+        
         
     }
 
     public void setAutoClawState(autoClawState autoState){
         m_aClawState = autoState;
+        isFinished = false;
+        switch(m_aClawState){
+            case OPEN:
+                clawTarget = false;
+                break;
+            case CLOSE:
+                clawTarget = true;
+                break;
+
+        }
+        
+    }
+    public boolean getTarget(){
+        return clawTarget;
     }
 
     public boolean isDone(){
