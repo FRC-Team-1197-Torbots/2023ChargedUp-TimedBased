@@ -177,6 +177,10 @@ public class DriveTrain {
         
       }
 
+      public double getPitch(){
+        return pigeon.getPitch();
+      }
+
       public double PID(double currentSpeed, double targetSpeed, SIDE side) {
         
         currentError = targetSpeed - currentSpeed;

@@ -7,11 +7,12 @@ import frc.robot.Mechanisms.Claw;
 import frc.robot.Mechanisms.DriveTrain;
 import frc.robot.Mechanisms.Elevator;
 import frc.robot.Mechanisms.Elevator.RunElevator;
+import frc.robot.PID_Tools.TorDerivative;
 import frc.robot.Mechanisms.Intake;
 
 public class AutoBalance {
     public static enum autoBalance1 {
-        INIT, MoveElevatorUp, OuttakeRoller, Linear1, MoveElevatorDown, Linear2, Linear3, DONE, TIMEOUT1
+        INIT, MoveElevatorUp, OuttakeRoller, Linear1, MoveElevatorDown, Linear2, Linear3, DONE, TIMEOUT1, Balance
     }
     private LinearTrajectoryTimed linear1;
     private LinearTrajectory linear3;
@@ -21,17 +22,33 @@ public class AutoBalance {
     private Elevator m_Elevator;
     private Arm m_Arm;
     private Claw m_Claw;
+    private DriveTrain m_DriveTrain;
     private autoBalance1 m_AutoBalance = autoBalance1.INIT;
     private boolean hasrun;
     private double endtime;
+    private double balanceOutput;
+
+    //PID variables
+    private TorDerivative pidDerivative;
+    private double pidIntegral;
+    private double pidDerivativeResult;
+
+    private final double dt = 0.005f;
+    private final double balancekP = 0.01;
+    private final double balancekI = 0;
+    private final double balancekD = 0;
+
     public AutoBalance(DriveTrain driveTrain, Intake intake, Elevator elevator, Arm arm, Claw claw){
+        pidIntegral = 0;
         m_Elevator = elevator;
+        m_DriveTrain = driveTrain;
         m_Arm = arm;
         m_Claw = claw;
         linear1 = new LinearTrajectoryTimed(driveTrain, 0.1, 1);
         linear2 = new LinearTrajectoryTimed(driveTrain, -0.1, 1);
         linear3 = new LinearTrajectory(driveTrain, -0.35, 4, 5);
         linearDone = new LinearTrajectoryTimed(driveTrain, 0, 10);
+        pidDerivative = new TorDerivative(dt);
         hasrun = false;
         endtime = -1;
     }
@@ -138,14 +155,28 @@ public class AutoBalance {
 
                 linear3.run();
                 if(linear3.isDone()) {
-                    m_AutoBalance = m_AutoBalance.DONE;
+                    m_AutoBalance = m_AutoBalance.DONE; //m_AutoBalance.Balance
                 }
+                break;
+                
+            case Balance:
+                double error = m_DriveTrain.getPitch();
+                pidIntegral += error;
+                pidDerivativeResult = pidDerivative.estimate(error);
+                balanceOutput = CalculateBalancePID(error);
+                m_DriveTrain.setMotorSpeeds(balanceOutput, balanceOutput);
                 break;
 
             case DONE:
                 linearDone.run();
                 break;
         }    
+    }
+
+    // Ideal Max amount of error is 15 degrees for the pitch
+    public double CalculateBalancePID(double error){
+        return (error * balancekP) + (pidIntegral * balancekI) + (pidDerivativeResult * balancekD);
+
     }
 }
     
