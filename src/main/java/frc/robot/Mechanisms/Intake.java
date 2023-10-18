@@ -30,9 +30,9 @@ public class Intake{
     private autoIntakeState m_AutoIntakeState;
 
     public Intake(){
-        Intakeout = new Solenoid(PneumaticsModuleType.REVPH, 1);
-        RollerBottom = new CANSparkMax(9, MotorType.kBrushless);
-        RollerTop = new CANSparkMax(10, MotorType.kBrushless);
+        //Intakeout = new Solenoid(PneumaticsModuleType.REVPH, 1);
+        //RollerBottom = new CANSparkMax(9, MotorType.kBrushless);
+        //RollerTop = new CANSparkMax(10, MotorType.kBrushless);
         isFinished = false;
         //IntakeEncoder = new Encoder(0, 0);
         //IntakeEncoder.reset();
@@ -43,17 +43,26 @@ public class Intake{
         Intakeout.toggle();
     }
 
+    public void runRollers(){
+        RollerTop.set(-0.5);
+        RollerBottom.set(0.6);
+    }
+    public void stopRollers(){
+        RollerTop.set(0);
+        RollerBottom.set(0);
+    }
+
     
     public void run(moveIntake intakeState){
         this.intakeState = intakeState;
         switch(intakeState){
             case UP:
-                Intakeout.set(false);
+                Intakeout.toggle();
                 RollerTop.set(0);
                 RollerBottom.set(0);
                 break;
             case DOWN:
-                Intakeout.set(true);
+                Intakeout.toggle();
                 RollerTop.set(-0.5);
                 RollerBottom.set(0.6);
                 break;
@@ -70,8 +79,8 @@ public class Intake{
                 if(!currentIntakeState){
                     isFinished = true;
                 }
-                //m_AutoIntakeState = autoIntakeState.RUN;
-                //currentIntakeState = Intakeout.get();
+                m_AutoIntakeState = autoIntakeState.RUN;
+                currentIntakeState = Intakeout.get();
                 break;
             case RUN:
                 TriggerIntake();

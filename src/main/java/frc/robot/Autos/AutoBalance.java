@@ -46,7 +46,7 @@ public class AutoBalance {
         m_Claw = claw;
         linear1 = new LinearTrajectoryTimed(driveTrain, 0.1, 1);
         linear2 = new LinearTrajectoryTimed(driveTrain, -0.1, 1);
-        linear3 = new LinearTrajectory(driveTrain, -0.35, 4, 5);
+        linear3 = new LinearTrajectory(driveTrain, -0.35, -6.5, 2.5);
         linearDone = new LinearTrajectoryTimed(driveTrain, 0, 10);
         pidDerivative = new TorDerivative(dt);
         hasrun = false;

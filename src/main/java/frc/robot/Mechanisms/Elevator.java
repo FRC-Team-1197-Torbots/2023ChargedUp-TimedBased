@@ -36,19 +36,21 @@ public class Elevator {
     private double speed;
     private Arm ARM_REF;
     
-    private final double kPTOP = 0.0000270;
-    private final double kITOP = 0.0;
-    private final double kDTOP = 0.000000015;
+
+
+     private final double kPTOP = 0.0000270; //0.0000270
+     private final double kITOP = 0.0;
+     private final double kDTOP = 0.000000015;//0.000000015
 
 
    // private final double kPMID = 0.000017;
-    //private final double kIMID = 0.000000037;
+   // private final double kIMID = 0.000000037;
    // private final double kDMID = 0.0000012;
 
     private boolean armmoved;
 
     public static enum RunElevator{
-        INTAKE,SCORE,IDLE, STORE
+        INTAKE,SCORE,IDLE, STORE,SUBSTATION
     }
 
     public static enum AutoElevatorDirection{
@@ -57,10 +59,13 @@ public class Elevator {
     
     public Elevator(Arm arm){
         
-        elMotor1 = new CANSparkMax(7, MotorType.kBrushless);
-        elMotor2 = new CANSparkMax(6, MotorType.kBrushless);
-        elMotor1.setIdleMode(IdleMode.kCoast);
-        elMotor2.setIdleMode(IdleMode.kCoast);
+        elMotor1 = new CANSparkMax(6, MotorType.kBrushless);
+        elMotor2 = new CANSparkMax(7, MotorType.kBrushless);
+
+        //elMotor1.setSmartCurrentLimit(currentPosition)
+        
+        elMotor1.setIdleMode(IdleMode.kBrake);
+        elMotor2.setIdleMode(IdleMode.kBrake);
         //botlimitSwitch = new DigitalInput(ElevatorArmConstants.limitSwitch1Port);
         //toplimitSwitch = new DigitalInput(ElevatorArmConstants.limitSwitch2Port);
         elEncoder = new Encoder(4, 5, false, Encoder.EncodingType.k4X);//Input correct channels later
@@ -92,60 +97,7 @@ public class Elevator {
         OnTarget = false;
     }
 
-    public void run(){  
-        //currentPosition = GetElevatorPos();
-        //m_runElevator = ElevatorState;
-        // if(!OnTarget) {
-        //     currentPosition = GetElevatorPos();
-        //     if(currentPosition < target && target > 30000) {
-        //         speed = 0.24;
-        //     } if(currentPosition < target && target > 20000 && target < 30000){
-        //         speed = 0.17;
-        //     }else if (target < 1000){
-        //         speed = -0.24;
-        //     }
-            
-
-        
-        /* 
-    
-            switch(m_runElevator){
-                case INTAKE:     
-                    //m_intake.SetSolenoid(true);
-                    target = 22108;
-                    if(!armmoved && currentPosition > (25108/2.5)) {
-                        ARM_REF.SetState(RunArm.HORIZONTAL);
-                        armmoved = true;
-                    }
-                    break;
-                case SCORE:
-                    target = 35096;
-
-                    if(!armmoved && currentPosition > (35096/3)) {
-                        ARM_REF.SetState(RunArm.HORIZONTAL);
-                        armmoved = true;
-                    } 
-                    break;
-                case IDLE://comment out if PID doesn't work
-                    target = 0;
-                    break;
-                case STORE:
-                    target = 250;
-                    if(!armmoved) {
-                        ARM_REF.SetState(RunArm.STORE);
-                        armmoved = true;
-                    }
-                    
-                    break;
-            }
-        
-
-        if(Math.abs(target - currentPosition) < 600) {
-            OnTarget = true;
-            speed = 0;
-        }
-        */
-        
+    public void run(){        
         
         SmartDashboard.putNumber("Output", elevatorOutput);
         SmartDashboard.putNumber("Current Pos", currentPosition);
@@ -153,13 +105,12 @@ public class Elevator {
         SmartDashboard.putBoolean("ontarget", OnTarget);
         //System.out.println(currentPosition);
 
-
+        //System.out.println("Elevator Poistion " + GetElevatorPos());
         
         currentPosition = GetElevatorPos();
         
         pidDerivativeResult = pidDerivative.estimate(target - currentPosition);
         SetElevatorSpeed(elevatorOutput);
-        
         if(Math.abs(target - currentPosition) > 1000 || (currentPosition < 1000 && m_runElevator == RunElevator.STORE)) {
             pidIntegral = 0;
         } else {
@@ -173,19 +124,36 @@ public class Elevator {
 
             break;
 
-            case INTAKE:
-                target = 24608;
+            case INTAKE://height for mid
+                target = 26608; //26608
                 elevatorOutput = (kPTOP * (target - currentPosition)) + (kITOP * pidIntegral) + (kDTOP * pidDerivativeResult);
+                if(Math.abs(elevatorOutput) > 0.2){
+                    elevatorOutput = Math.signum(elevatorOutput) * 0.4;
+                }
                 break;
 
             case SCORE:
-                target = 32696;
+                target = 36096;
                 elevatorOutput = (kPTOP * (target - currentPosition)) + (kITOP * pidIntegral) + (kDTOP * pidDerivativeResult);
+                if(Math.abs(elevatorOutput) > 0.2){
+                    elevatorOutput = Math.signum(elevatorOutput) * 0.4;
+                }
                 break;
 
             case STORE:
                 target = 5000;
                 elevatorOutput = ((kPTOP * 0.5) * (target - currentPosition)) + (kITOP * pidIntegral) + (kDTOP * pidDerivativeResult);
+                if(Math.abs(elevatorOutput) > 0.2){
+                    elevatorOutput = Math.signum(elevatorOutput) * 0.4;
+                }
+            /*case SUBSTATION:
+                target = 5000;
+                elevatorOutput = ((kPTOP * 0.5) * (target - currentPosition)) + (kITOP * pidIntegral) + (kDTOP * pidDerivativeResult);
+                if(Math.abs(elevatorOutput) > 0.2){
+                    elevatorOutput = Math.signum(elevatorOutput) * 0.4;
+                }
+                break;*/
+
               
         }
 
@@ -233,7 +201,7 @@ public class Elevator {
 
     public void SetElevatorSpeed(double speed){
         elMotor1.set(speed);
-        elMotor2.set(speed);
+        elMotor2.set(-speed);
 
     }
     public int GetElevatorPos(){

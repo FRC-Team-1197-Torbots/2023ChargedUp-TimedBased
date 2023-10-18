@@ -13,7 +13,7 @@ public class DriveTrain {
     private CANSparkMax LeftTop;
     private CANSparkMax LeftBottom1;
     private CANSparkMax LeftBottom2;
-
+//kjnjfvnfivnlivzfsivzivhzignsz
     private CANSparkMax RightTop;
     private CANSparkMax RightBottom1;
     private CANSparkMax RightBottom2;
@@ -65,15 +65,9 @@ public class DriveTrain {
         RightTop = new CANSparkMax(13, MotorType.kBrushless); 
         RightBottom1 = new CANSparkMax(12, MotorType.kBrushless);		
         RightBottom2 = new CANSparkMax(2, MotorType.kBrushless);
+        
         pidDerivative = new TorDerivative(dt);
         
-        LeftTop.setIdleMode(IdleMode.kBrake);
-        LeftBottom1.setIdleMode(IdleMode.kBrake);
-        LeftBottom2.setIdleMode(IdleMode.kBrake);
-
-        RightTop.setIdleMode(IdleMode.kBrake);
-        RightBottom1.setIdleMode(IdleMode.kBrake);
-        RightBottom2.setIdleMode(IdleMode.kBrake);
 
         pigeon = new Pigeon2(1);
 
@@ -93,7 +87,7 @@ public class DriveTrain {
         pigeon.configFactoryDefault();
         pigeon.setYaw(0);
 
-        setMotorState(IdleMode.kBrake);
+        setBrakeMode();
         //gyroSim = new AnalogGyroSim(m_gyro);
         
       }
@@ -101,6 +95,7 @@ public class DriveTrain {
       public void TeleDrive(){
         double throttle = m_player1.getLeftY();
         double steer = m_player1.getLeftX();
+        //System.out.println(getRightEncoder());
 
         /*if(m_player1.getRawButtonReleased(1)) {
             low = !low;
@@ -110,16 +105,17 @@ public class DriveTrain {
       
         
         if(m_Elevator.GetElevatorPos() > 5000){
-          maxThrottle = 0.4;
-          maxSteer = 0.3;
+          maxThrottle = 0.35;
+          maxSteer = 0.35;
         }
         else if(!low){
-          maxThrottle = 0.9;
-          maxSteer = 0.7;
+          maxThrottle = 0.9;//0.8
+          maxSteer = 0.55;
         } 
         else{
-          maxThrottle = 0.5;
-          maxSteer = 0.35;
+          maxThrottle = 0.9;//0.8
+      
+          maxSteer = 0.55;
         }
         
         double sign = Math.signum(throttle);
@@ -179,6 +175,16 @@ public class DriveTrain {
 
       public double getPitch(){
         return pigeon.getPitch();
+      }
+
+      public void setBrakeMode(){
+        LeftTop.setIdleMode(IdleMode.kBrake);
+        LeftBottom1.setIdleMode(IdleMode.kBrake);
+        LeftBottom2.setIdleMode(IdleMode.kBrake);
+
+        RightTop.setIdleMode(IdleMode.kBrake);
+        RightBottom1.setIdleMode(IdleMode.kBrake);
+        RightBottom2.setIdleMode(IdleMode.kBrake);
       }
 
       public double PID(double currentSpeed, double targetSpeed, SIDE side) {

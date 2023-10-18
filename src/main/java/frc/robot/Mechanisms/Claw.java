@@ -17,15 +17,16 @@ public class Claw{
     private double ConeIntakeSpeed = 0.3;
     private double CubeIntakeSpeed = 0.5;
     private double CubeEjectSpeed = -0.4;
-    private double IdleSpeed = 0.02;
+    private double IdleSpeed = 0.08;
     private autoClawState m_aClawState;
 
     public static enum autoClawState{
         OPEN, CLOSE
     }  
+    
 
     public Claw(){
-        clawSolenoid = new Solenoid(PneumaticsModuleType.REVPH, 2);
+        clawSolenoid = new Solenoid(PneumaticsModuleType.REVPH, 3);//2
         clawMotor = new CANSparkMax(14, MotorType.kBrushless);
     }
 

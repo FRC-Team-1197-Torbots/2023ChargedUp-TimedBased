@@ -19,15 +19,17 @@ public class Arm{
     private double currentPosition;
     private double speed;
     private boolean isFinished;
-
-    public final double STOREDBL = 0.805f;
-    public final double SCOREDBL = 0.441f;
-    public final double DOWNDBL = 0.655f;
-    private final double MAX_ARM_OUTPUT = 0.35;
+    //new pot value for mid 0.0484
+    //0.992
+    //0.614
+    public final double STOREDBL = 0.970f;//0.463f;//0.805f;0.486;0.992
+    public final double SCOREDBL = 0.645;//0.112f;//0.441f;0.132
+    public final double SCOREMID = 0.0484;
+    public final double DOWNDBL = 0.121f;
+    private final double MAX_ARM_OUTPUT = 0.2;
     private AutoArmDirection m_ArmDirection;
-
     public static enum RunArm { 
-        STORE, DOWN, HORIZONTAL, IDLE
+        STORE, DOWN, HORIZONTAL, IDLE,ANGLEDUP
     }
     public static enum AutoArmDirection{
         UP, DOWN
@@ -65,6 +67,8 @@ public class Arm{
             case HORIZONTAL:
                 target = SCOREDBL;
             break;
+            case ANGLEDUP:
+                target = SCOREMID;
 
             case IDLE:
                 target = GetPotValue();
@@ -81,54 +85,67 @@ public class Arm{
     //straight down = 0.695
     public void run(){
         currentPosition = GetPotValue();
+        //System.out.println("Pot value" + currentPosition);
+        //System.out.println("Current Angle: " + currentPosition);
         speed = 0;
 
-        if(!ontarget) {                   
+       if(!ontarget) {                   
 
             switch(m_state){
                 case STORE:
 
                     if(currentPosition < STOREDBL) {
-                        speed = 0.31;
+                        speed = 0.25;//0.45;
                     } else {
-                        speed = -0.31;
+                        speed = -0.2;
                     }
                 
                 break;
 
                 case DOWN:
                     if(currentPosition < DOWNDBL) {
-                        speed = 0.23;
+                        speed = 0.25;//0.37;
                     } else {
-                        speed = -0.23;
+                        speed = -0.2;
                     }
                 break;
 
                 case HORIZONTAL:
                     if(currentPosition < SCOREDBL) {
-                        speed = 0.23;
+                        speed = 0.2;//0.2;//0.30;
                     } else {
-                        speed = -0.23;
+                        speed = -0.2;
+                    }
+                break;
+                case ANGLEDUP:
+                    if(currentPosition < SCOREMID) {
+                        speed = 0.2;//0.2;//0.30;
+                    } else {
+                        speed = -0.2;
                     }
                 break;
             }
+            
         } 
 
         if(Math.abs(target - currentPosition) < 0.005f) {
             ontarget = true;
-            speed = 0;
+            //speed = 0;
         }
 
         if(ontarget && m_state == RunArm.HORIZONTAL) {
             speed = -0.005f;
         }
+        if(ontarget && m_state == RunArm.ANGLEDUP) {
+            speed = -0.005f;
+        }
 
-        SetArmSpeed(speed * 3.7f);
+        SetArmSpeed(speed * 3.9f);
 
         SmartDashboard.putNumber("CurrentPosition Arm", currentPosition);
-        SmartDashboard.putBoolean("OnTarget Arm", ontarget);
-        SmartDashboard.putNumber("Arm Error", (target - currentPosition));
-        SmartDashboard.putNumber("Arm target", target);
+        //SmartDashboard.putBoolean("OnTarget Arm", ontarget);
+        //SmartDashboard.putNumber("Arm Error", (target - currentPosition));
+        //SmartDashboard.putNumber("Arm target", target);
 
     }
 
@@ -136,6 +153,7 @@ public class Arm{
         currentPosition = GetPotValue();
         speed = 0;
         switch(m_ArmDirection){
+             
             case UP:
                 target = SCOREDBL;
                 if(currentPosition < target) {
@@ -168,6 +186,10 @@ public class Arm{
         return ontarget;
     }
 
+    public void resetTaget(){
+        ontarget = false;
+    }
+
     /*
     public void SetArmState(STATE state){
         m_armState = state;
@@ -175,6 +197,10 @@ public class Arm{
     public void SetArmSpeed(double speed){
         armMotor1.set(speed);
 
+    }
+
+    public double GetError() {
+        return target - GetPotValue();
     }
     
 

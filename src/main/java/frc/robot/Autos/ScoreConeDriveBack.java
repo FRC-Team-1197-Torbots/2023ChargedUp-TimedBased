@@ -34,14 +34,14 @@ public class ScoreConeDriveBack {
         m_Claw = claw;
         linear1 = new LinearTrajectoryTimed(driveTrain, 0.1, 1);
         linear2 = new LinearTrajectoryTimed(driveTrain, -0.1, 1);
-        linear3 = new LinearTrajectoryTimed(driveTrain, -0.35, 2);
+        linear3 = new LinearTrajectoryTimed(driveTrain, -0.35, 2.25); //previous number -0.35
         linearDone = new LinearTrajectoryTimed(driveTrain, 0, 10);
         hasrun = false;
         endtime = -1;
     }
 
     public void run() {
-        m_Claw.SetClawSpeed(0.04f);
+        m_Claw.SetClawSpeed(0.25f);
         //SmartDashboard.putString("Arm State", m_Arm.m_state.toString());
     
         currentTime = Timer.getFPGATimestamp();
@@ -89,7 +89,7 @@ public class ScoreConeDriveBack {
 
             case OpenClaw:                
                 m_Claw.dropClaw();
-                Timer.delay(2);
+                Timer.delay(1);
                 autoState = autoRun1.Linear2;   
                 hasrun = false;             
                 break;
@@ -108,6 +108,10 @@ public class ScoreConeDriveBack {
                 break;
 
             case Linear1:
+                if(Math.abs(m_Arm.GetError()) > 0.1){
+                    m_Arm.resetTaget();
+                }
+
                 if(!hasrun) {
                     linear1.init();
                     hasrun = true;
